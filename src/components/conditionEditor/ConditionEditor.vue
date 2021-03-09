@@ -9,7 +9,21 @@ export default {
     value: {
       type: Array,
       default: () => []
-    }
+    },
+    /**
+     * 字段名下拉框的所有数据
+     */
+    fieldNameOptions: {
+      type: Array,
+      default: () => [{ label: "a1", value: 'a1' }, { label: "a2", value: 'a2' }, { label: "a3", value: 'a3' }, { label: "a4", value: 'a4' }]
+    },
+    /**
+     * 关系运算符下拉框的所有数据
+     */
+    operatorOptions: {
+      type: Array,
+      default: () => [{ label: "=", value: '==' }, { label: ">", value: '>' }, { label: "<", value: '<' }, { label: ">=", value: '>=' }]
+    },
   },
   components: {
     ConditionItem
@@ -36,9 +50,18 @@ export default {
     },
     /**
     * 修改条件字段
+    * @param {*} key 字段的值
+    * @param {*} field 修改的字段的名字 fieldName| operator |value
+    * @param {Array} position 修改的节点位于整个树节点的位置
     */
     changeField ({ key, field, position }) {
       this.conditionValue = this.literator(this.conditionValue, position, field, key)
+      this.$emit('changeField', {
+        key, field, position,
+        callback: (customTag) => {
+          this.conditionValue = this.literator(this.conditionValue, position, 'customTag', customTag)
+        }
+      })
       this.$emit('change', this.conditionValue);
     },
     /**
@@ -51,6 +74,7 @@ export default {
         cachePosition.shift()
         cacheValue[position[0]].condition = this.literator(cacheValue[position[0]].condition, cachePosition, field, key)
       } else {
+        console.log(44);
         cacheValue[position[0]][field] = key
       }
       return cacheValue
@@ -173,6 +197,8 @@ export default {
               }
               return <ConditionItem
                 value={item}
+                fieldNameOptions={this.fieldNameOptions}
+                operatorOptions={this.operatorOptions}
                 position={[...position, index]}
                 onChangeField={this.changeField}
                 onHandleDelete={this.handleDelete}
